@@ -23,26 +23,18 @@ http.createServer(function(request, response) {
 
     console.log('URI /config get list');
     
-    request.on('error', function(err) {
+    response.statusCode = 200;
+    response.setHeader('Content-Type', 'application/json');
+
+
+    response.on('error', function(err) {
       console.error(err);
-    }).on('data', function(chunk) {
-      body.push(chunk);
-    }).on('end', function() {
-
-      
-      
-      response.statusCode = 200;
-      response.setHeader('Content-Type', 'application/json');
-
-
-      response.on('error', function(err) {
-        console.error(err);
-      });
-      
-      response.write(JSON.stringify({configs}));
-      response.end();
-      
     });
+    
+    response.write(JSON.stringify({configs}));
+    response.end();
+      
+  
 
   //GET a config
   } else if(request.method === 'GET' && request.url.match(/\/config\/*/)){ 
