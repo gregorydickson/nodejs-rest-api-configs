@@ -2,7 +2,8 @@ var http = require('http');
 var loki = require('lokijs');
 var URL = require('url');
 var db = new loki('config.json');
-var configs = db.addCollection('configs');
+var configs = [];
+var ids = 0;
 
 
 console.log('server running at http://localhost:8080');
@@ -27,12 +28,8 @@ http.createServer(function(request, response) {
     }).on('data', function(chunk) {
       body.push(chunk);
     }).on('end', function() {
-      body = Buffer.concat(body).toString();
-    
 
-      var data = JSON.parse(body);
-
-      console.log('body:'+body);
+      
       
       response.statusCode = 200;
       response.setHeader('Content-Type', 'application/json');
@@ -42,7 +39,7 @@ http.createServer(function(request, response) {
         console.error(err);
       });
       
-      response.write(JSON.stringify(payload));
+      response.write(JSON.stringify(configs));
       response.end();
       
     });
@@ -56,9 +53,15 @@ http.createServer(function(request, response) {
       body.push(chunk);
     }).on('end', function() {
       var configId = url.match(/\d{1,5}/);
-      
+      var aConfig = null;
       console.log("config doc id:"+configId);
-      var aConfig = configs.get(configId);
+      for(var i=0; i < configs.length; i++){
+        if(configs[i].id == configId){
+          aConfig = configs[i];
+          break;
+        }
+      }
+      
       if(aConfig){
         response.statusCode = 200;
         response.setHeader('Content-Type', 'application/json');
@@ -85,8 +88,10 @@ http.createServer(function(request, response) {
       body = Buffer.concat(body).toString();
 
       var data = JSON.parse(body);
-      var savedObject = configs.insert(data);
-      var payload = JSON.stringify(savedObject);
+      ids = ids++;
+      data.id = ids;
+      configs.push(data);
+      var payload = JSON.stringify(data);
       
       response.statusCode = 200;
       response.setHeader('Content-Type', 'application/json');
@@ -115,14 +120,22 @@ http.createServer(function(request, response) {
       response.end();
     }
 
-  } else if(request.method === 'DELETE' && request.url === '/config/*') {
-    response.statusCode = 200;
-    response.setHeader('Content-Type', 'application/json');
-    payload = {"status":"server ok"};
-    response.write(JSON.stringify(payload));
-    response.end();
+  } else if(request.method === 'DELETE' && request.url.match(/\/config\/*/)) {
+    var configId = url.match(/\d{1,5}/);
+    console.log("config doc id:"+configId);
+    var aConfig = configs.get(configId);
+
+    if(aConfig){
+      aConfig = configs.remove(aConfig);
+      response.statusCode = 200;
+      response.end();
+    } else {
+      response.statusCode = 404;
+      response.end();
+    }
   } else {
     response.statusCode = 404;
     response.end();
   }
 }).listen(8080);
+

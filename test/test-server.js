@@ -18,7 +18,7 @@ describe('configs', function() {
       res.should.have.status(200);
       res.should.be.json;
       res.body.should.be.a('object');
-      expect(res.body).to.have.property('meta');
+      expect(res.body).to.have.property('id');
 
       done();
     });
@@ -32,7 +32,7 @@ describe('configs', function() {
       res.should.have.status(200);
       res.should.be.json;
       res.body.should.be.a('object');
-      expect(res.body).to.have.property('meta');
+      expect(res.body).to.have.property('id');
 
       done();
     });
@@ -45,7 +45,7 @@ describe('configs', function() {
           res.should.have.status(200);
           res.should.be.json;
           res.body.should.be.a('object');
-          expect(res.body).to.have.property('meta');
+          expect(res.body).to.have.property('id');
           done();
       });
   });
@@ -57,7 +57,7 @@ describe('configs', function() {
           res.should.have.status(200);
           res.should.be.json;
           res.body.should.be.a('object');
-          expect(res.body).to.have.property('meta');
+          expect(res.body).to.have.property('id');
           done();
       });
   });
@@ -71,6 +71,14 @@ describe('configs', function() {
       });
   });
 
+  it('should delete /config DELETE', function(done) {
+    chai.request('http://localhost:8080')
+      .delete('/config/2')
+      .end(function(err, res){
+          res.should.have.status(200);
+          done();
+      });
+  });
 
   
 });
