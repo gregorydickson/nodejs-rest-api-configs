@@ -38,7 +38,7 @@ describe('configs', function() {
     });
   });
   
-  it('should respond to /config GET', function(done) {
+  it('should respond to /config GET 1', function(done) {
     chai.request('http://localhost:8080')
       .get('/config/1')
       .end(function(err, res){
@@ -50,7 +50,7 @@ describe('configs', function() {
       });
   });
 
-  it('should respond to /config GET', function(done) {
+  it('should respond to /config GET 2', function(done) {
     chai.request('http://localhost:8080')
       .get('/config/2')
       .end(function(err, res){
@@ -58,6 +58,18 @@ describe('configs', function() {
           res.should.be.json;
           res.body.should.be.a('object');
           expect(res.body).to.have.property('id');
+          done();
+      });
+  });
+
+  it('should list configs on /config with no parameter', function(done) {
+    chai.request('http://localhost:8080')
+      .get('/config')
+      .end(function(err, res){
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('object');
+          expect(res.body).to.have.property('configs');
           done();
       });
   });

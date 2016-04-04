@@ -1,7 +1,7 @@
 var http = require('http');
-var loki = require('lokijs');
+
 var URL = require('url');
-var db = new loki('config.json');
+
 var configs = [];
 var ids = 0;
 
@@ -39,7 +39,7 @@ http.createServer(function(request, response) {
         console.error(err);
       });
       
-      response.write(JSON.stringify(configs));
+      response.write(JSON.stringify({configs}));
       response.end();
       
     });
@@ -88,7 +88,8 @@ http.createServer(function(request, response) {
       body = Buffer.concat(body).toString();
 
       var data = JSON.parse(body);
-      ids = ids++;
+      ids = ids + 1;
+      console.log("ids:"+ids);
       data.id = ids;
       configs.push(data);
       var payload = JSON.stringify(data);
@@ -108,12 +109,21 @@ http.createServer(function(request, response) {
 
     body = Buffer.concat(body).toString();
     var data = JSON.parse(body);
-    var aConfig = configs.update(configId);
+    var aConfig = null;
+    var configId = url.match(/\d{1,5}/);
+    for(var i=0; i < configs.length; i++){
+        if(configs[i].id == configId){
+          aConfig = configs[i];
+          data.id = i;
+          configs[i] = data;
+          break;
+        }
+    }
     if(aConfig){
+
       response.statusCode = 200;
       response.setHeader('Content-Type', 'application/json');
-      payload = {"status":"server ok"};
-      response.write(JSON.stringify(payload));
+      response.write(JSON.stringify(data));
       response.end();
     } else {
       response.statusCode = 404;
@@ -123,10 +133,17 @@ http.createServer(function(request, response) {
   } else if(request.method === 'DELETE' && request.url.match(/\/config\/*/)) {
     var configId = url.match(/\d{1,5}/);
     console.log("config doc id:"+configId);
-    var aConfig = configs.get(configId);
+    
+    var deleted = false;
+    for(var i=0; i < configs.length; i++){
+        if(configs[i].id == configId){
+          configs.splice(i,1);
+          deleted = true;
+          break;
+        }
+    }
 
-    if(aConfig){
-      aConfig = configs.remove(aConfig);
+    if(deleted){
       response.statusCode = 200;
       response.end();
     } else {
